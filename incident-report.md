@@ -1,10 +1,10 @@
 # Incident Report: VIP Recovery Phishing Campaign
 
-**Report ID:** IR-2025-001  
-**Date of Incident:** May 27, 2025  
-**Date of Analysis:** September 2025  
-**Analyst:** Mohammad Akib Shaikh  
-**Severity:** High  
+**Report ID:** IR-2025-001
+**Date of Incident:** May 27, 2025
+**Date of Analysis:** September 2025
+**Analyst:** Mohammad Akib Shaikh
+**Severity:** High
 **Status:** Closed - Analysis Complete
 
 ---
@@ -13,7 +13,9 @@
 
 A phishing email was delivered to a user containing a malicious RAR archive disguised as a business invoice. When extracted and executed, the embedded executable established persistence on the victim machine, beaconed to external infrastructure for geolocation data, and exfiltrated system information to an attacker-controlled email address using the "VIP Recovery" malware family.
 
-The attacker used a compromised legitimate domain (`uyumelektrik.com`) to send the initial email, making it appear trustworthy. The malware used Telegram's API as a command-and-control channel, blending malicious traffic with legitimate HTTPS activity.
+The attacker used a compromised legitimate domain (uyumelektrik.com) to send the initial email, making it appear trustworthy. The malware used Telegram's API as a command-and-control channel, blending malicious traffic with legitimate HTTPS activity.
+
+What stood out most during analysis was the speed. From the moment the malware executed to the moment data left the network was 17 seconds. There was no window for a human to intervene.
 
 ---
 
@@ -21,12 +23,12 @@ The attacker used a compromised legitimate domain (`uyumelektrik.com`) to send t
 
 | Time (UTC) | Event |
 |------------|-------|
-| 07:14:35 | Phishing email sent from compromised domain `uyumelektrik.com` |
-| 19:32:31 | Malware executes, checks external IP via `checkip.dyndns.org` |
-| 19:32:31 | Queries `reallyfreegeoip.org` for geolocation data |
-| 19:32:34 | Beacons to `api.telegram.org` (C2 channel) |
-| 19:32:40 | Exfiltrates data via SMTP to `mail.testeremarketim.com` |
-| 19:32:48 | Data exfiltration email sent to `phinametics247@gmail.com` |
+| 07:14:35 | Phishing email sent from compromised domain uyumelektrik.com |
+| 19:32:31 | Malware executes, checks external IP via checkip.dyndns.org |
+| 19:32:31 | Queries reallyfreegeoip.org for geolocation data |
+| 19:32:34 | Beacons to api.telegram.org (C2 channel) |
+| 19:32:40 | Exfiltrates data via SMTP to mail.testeremarketim.com |
+| 19:32:48 | Data exfiltration email sent to phinametics247@gmail.com |
 
 **Time from execution to exfiltration: 17 seconds.**
 
@@ -36,20 +38,18 @@ The attacker used a compromised legitimate domain (`uyumelektrik.com`) to send t
 
 ### Email Analysis
 
-The phishing email used the following characteristics:
-
 | Header | Value | Analysis |
 |--------|-------|----------|
-| From | `=?UTF-8?B?IlR1cmFuIETEsE5DIg==?=` | Base64-encoded display name. Decodes to "Turan DİNÇ" — a fake persona. |
-| Subject | `KABLO` | Turkish for "cable." Designed to look like a business inquiry. |
-| Received | `from uyumelektrik.com [198.55.98.69]` | Sender IP belongs to a compromised legitimate domain. |
-| Message-ID | `<20250527001435.3CCCD0212B127193@uyumelektrik.com>` | Domain matches the From header — consistent with compromised infrastructure, not spoofed. |
+| From | =?UTF-8?B?IlR1cmFuIETEsE5DIg==?= | Base64-encoded display name. Decodes to "Turan DİNÇ" — a fake persona. |
+| Subject | KABLO | Turkish for "cable." Designed to look like a business inquiry. |
+| Received | from uyumelektrik.com [198.55.98.69] | Sender IP belongs to a compromised legitimate domain. |
+| Message-ID | <20250527001435.3CCCD0212B127193@uyumelektrik.com> | Domain matches the From header — consistent with compromised infrastructure, not spoofed. |
 
 ### Social Engineering Tactics
 
 - **Business context lure:** The subject and filename impersonate a Turkish electrical company requesting a price quote for 2000 units.
-- **Legitimate sender domain:** `uyumelektrik.com` is a real company. The attacker likely compromised their mail server.
-- **File extension spoofing:** The attachment ends in `.r01` (a RAR multi-part extension) instead of `.rar` or `.exe`, hoping the user won't recognize it as executable content.
+- **Legitimate sender domain:** uyumelektrik.com is a real company. The attacker likely compromised their mail server.
+- **File extension spoofing:** The attachment ends in .r01 (a RAR multi-part extension) instead of .rar or .exe, hoping the user won't recognize it as executable content.
 
 ---
 
@@ -59,7 +59,7 @@ The phishing email used the following characteristics:
 
 | Property | Value |
 |----------|-------|
-| SHA256 | `263f18680b864de7c8d5edd7622f07606205201976c755dd7fa98c80a8a770d4` |
+| SHA256 | 263f18680b864de7c8d5edd7622f07606205201976c755dd7fa98c80a8a770d4 |
 | Size | 696,751 bytes |
 | Type | RAR archive, v4, Win32 |
 
@@ -67,55 +67,56 @@ The phishing email used the following characteristics:
 
 | Property | Value |
 |----------|-------|
-| SHA256 | `aaf37584883937059e00508a1dfe72df4148efef238b4e86038902f968f220c1` |
+| SHA256 | aaf37584883937059e00508a1dfe72df4148efef238b4e86038902f968f220c1 |
 | Size | 794,624 bytes |
 | Type | PE32 executable, .NET assembly |
-| Persistence | `C:\Users\[username]\AppData\Roaming\gCmiVoeYUJc.exe` |
+| Persistence | C:\Users\[username]\AppData\Roaming\gCmiVoeYUJc.exe |
 
-The malware is a .NET executable that establishes persistence by copying itself to the user's AppData\Roaming folder with a randomized filename (`gCmiVoeYUJc.exe`). This is a common technique to evade detection and survive reboots.
+The malware is a .NET executable that establishes persistence by copying itself to the user's AppData\Roaming folder with a randomized filename (gCmiVoeYUJc.exe). This is a common technique to evade detection and survive reboots. The randomized filename makes signature-based detection harder—you can't just blocklist a name that changes.
 
----
 
 ## Command and Control
 
-The malware used multiple external services to gather system information and maintain communication:
-
 | Domain | Purpose | MITRE Technique |
 |--------|---------|-----------------|
-| `checkip.dyndns.org` | Determine victim's public IP | T1016 - System Network Configuration Discovery |
-| `reallyfreegeoip.org` | Geolocate victim IP | T1614 - System Location Discovery |
-| `api.telegram.org` | C2 beacon | T1102 - Web Service (Telegram abused as C2) |
-| `mail.testeremarketim.com` | Data exfiltration via SMTP | T1048 - Exfiltration Over Alternative Protocol |
+| checkip.dyndns.org | Determine victim's public IP | T1016 - System Network Configuration Discovery |
+| reallyfreegeoip.org | Geolocate victim IP | T1614 - System Location Discovery |
+| api.telegram.org | C2 beacon | T1102 - Web Service |
+| mail.testeremarketim.com | Data exfiltration via SMTP | T1048 - Exfiltration Over Alternative Protocol |
 
-**Notable evasion:** Using Telegram's API as a C2 channel is effective because Telegram traffic is encrypted, widely allowed on corporate networks, and blends in with legitimate user activity.
+**Notable evasion:** Using Telegram's API as a C2 channel is effective because Telegram traffic is encrypted, widely allowed on corporate networks, and blends in with legitimate user activity. Blocking Telegram outright isn't realistic in most environments.
 
 ---
 
 ## Indicators of Compromise (IOCs)
 
 ### File Hashes
-- `263f18680b864de7c8d5edd7622f07606205201976c755dd7fa98c80a8a770d4` (RAR archive)
-- `aaf37584883937059e00508a1dfe72df4148efef238b4e86038902f968f220c1` (EXE payload)
+
+- 263f18680b864de7c8d5edd7622f07606205201976c755dd7fa98c80a8a770d4 (RAR archive)
+- aaf37584883937059e00508a1dfe72df4148efef238b4e86038902f968f220c1 (EXE payload)
 
 ### Network Indicators
-- `198.55.98.69` (sender IP)
-- `132.226.247.73` (checkip.dyndns.org resolution)
-- `104.21.64.1` (reallyfreegeoip.org resolution)
-- `149.154.167.220` (api.telegram.org)
-- `5.2.84.41` (mail.testeremarketim.com SMTP)
-- `checkip.dyndns.org`
-- `reallyfreegeoip.org`
-- `api.telegram.org`
-- `mail.testeremarketim.com`
-- `uyumelektrik.com` (compromised sender)
+
+- 198.55.98.69 (sender IP)
+- 132.226.247.73 (checkip.dyndns.org resolution)
+- 104.21.64.1 (reallyfreegeoip.org resolution)
+- 149.154.167.220 (api.telegram.org)
+- 5.2.84.41 (mail.testeremarketim.com SMTP)
+- checkip.dyndns.org
+- reallyfreegeoip.org
+- api.telegram.org
+- mail.testeremarketim.com
+- uyumelektrik.com (compromised sender)
 
 ### Email Indicators
-- `info@testeremarketim.com` (attacker exfil address)
-- `phinametics247@gmail.com` (attacker collection address)
-- Display name: `Turan DİNÇ`
+
+- info@testeremarketim.com (attacker exfil address)
+- phinametics247@gmail.com (attacker collection address)
+- Display name: Turan DİNÇ
 
 ### File System Indicators
-- `C:\Users\[username]\AppData\Roaming\gCmiVoeYUJc.exe`
+
+- C:\Users\[username]\AppData\Roaming\gCmiVoeYUJc.exe
 
 ---
 
@@ -137,10 +138,10 @@ The malware used multiple external services to gather system information and mai
 
 ### SIEM Detection Rules
 
-1. **Email gateway rule:** Alert on RAR archives with `.r01` extensions from external senders.
-2. **Network rule:** Alert on HTTPS traffic to `api.telegram.org` from non-browser processes.
-3. **Endpoint rule:** Alert on executable creation in `AppData\Roaming` with randomized filenames.
-4. **Process rule:** Alert when `checkip.dyndns.org` or `reallyfreegeoip.org` are contacted by non-standard processes.
+1. Email gateway rule: Alert on RAR archives with .r01 extensions from external senders.
+2. Network rule: Alert on HTTPS traffic to api.telegram.org from non-browser processes.
+3. Endpoint rule: Alert on executable creation in AppData\Roaming with randomized filenames.
+4. Process rule: Alert when checkip.dyndns.org or reallyfreegeoip.org are contacted by non-standard processes.
 
 ### Hunting Queries (KQL - Microsoft Sentinel)
 
@@ -151,3 +152,29 @@ DeviceFileEvents
 | where FileName endswith ".exe"
 | where InitiatingProcessFileName !in ("explorer.exe", "setup.exe")
 | project TimeGenerated, DeviceName, FileName, FolderPath, InitiatingProcessFileName
+
+---
+
+### Recommendations
+
+1. Block the IOCs at the email gateway, firewall, and endpoint protection layers.
+2. Hunt for the persistence file gCmiVoeYUJc.exe across all endpoints.
+3. Check email logs for messages from uyumelektrik.com to identify other potential victims.
+4. Notify the compromised domain owner so they can secure their mail server.
+5. User awareness training on the risks of opening unexpected attachments, even from known senders.
+6. Block .r01 extensions at the email gateway unless there's a legitimate business need.
+
+
+### Lessons Learned
+
+- **Compromised legitimate domains are harder to detect than spoofed ones.** The sender domain passed SPF and DKIM because it was the legitimate mail server. Detection must go beyond authentication.
+- **Double extensions and unusual archive formats** remain effective social engineering techniques.
+- **Abuse of legitimate services (Telegram)** for C2 requires behavioral detection, not just domain blocklists.
+- **Speed matters.** From execution to exfiltration was 17 seconds. Automated detection is essential—human review would arrive too late.
+
+---
+
+# References
+
+- Source: https://www.malware-traffic-analysis.net/2025/05/27/index.html
+- MITRE ATT&CK: https://attack.mitre.org/

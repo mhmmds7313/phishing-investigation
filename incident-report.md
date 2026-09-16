@@ -155,22 +155,7 @@ DeviceFileEvents
 
 ---
 
-### Recommendations
 
-1. Block the IOCs at the email gateway, firewall, and endpoint protection layers.
-2. Hunt for the persistence file gCmiVoeYUJc.exe across all endpoints.
-3. Check email logs for messages from uyumelektrik.com to identify other potential victims.
-4. Notify the compromised domain owner so they can secure their mail server.
-5. User awareness training on the risks of opening unexpected attachments, even from known senders.
-6. Block .r01 extensions at the email gateway unless there's a legitimate business need.
-
-
-### Lessons Learned
-
-- **Compromised legitimate domains are harder to detect than spoofed ones.** The sender domain passed SPF and DKIM because it was the legitimate mail server. Detection must go beyond authentication.
-- **Double extensions and unusual archive formats** remain effective social engineering techniques.
-- **Abuse of legitimate services (Telegram)** for C2 requires behavioral detection, not just domain blocklists.
-- **Speed matters.** From execution to exfiltration was 17 seconds. Automated detection is essential—human review would arrive too late.
 
 ---
 
